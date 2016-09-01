@@ -23,7 +23,7 @@ const headers = {
 const mergePR = (prUrl, commit_title, sha) => {
   const mergeData = {
     sha,
-    commit_title,
+    //commit_title,
     squash: SQUASH_MERGES
   }
 
