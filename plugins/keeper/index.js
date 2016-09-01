@@ -1,19 +1,17 @@
 const btoa = require('btoa')
-const groupBy = require('lodash.groupby')
 const highwire = require('highwire')
-const values = require('lodash.values')
 
-const FailedStatusFoundError = require('./failed-status-found-error')
 const PendingTimeoutError = require('./pending-timeout-error')
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 const GITHUB_USER = process.env.GITHUB_USER
 const GREENKEEPER_BOT_GITHUB_URL = 'https://github.com/greenkeeperio-bot'
-const SQUASH_MERGES = process.env.SQUASH_MERGES || false
-const DELETE_BRANCHES = process.env.DELETE_BRANCHES || true
+const SQUASH_MERGES = !!process.env.SQUASH_MERGES || false
+const DELETE_BRANCHES = !!process.env.DELETE_BRANCHES || false
 
 const MINUTE = 1000 * 60
 const HOUR = MINUTE * 60
+const DAY = HOUR * 24
 
 const { get, put, post, del } = highwire
 
@@ -29,42 +27,30 @@ const mergePR = (prUrl, prNumber, sha) => {
     squash: SQUASH_MERGES
   }
 
-  put(`${prUrl}/merge`, mergeData, { headers })
+  return put(`${prUrl}/merge`, mergeData, { headers })
 }
 
-const validatePR = (statusesUrl, timeout = MINUTE) =>
-  get(statusesUrl, { headers })
+const validatePR = (prUrl, timeout = MINUTE) =>
+  get(prUrl, { headers })
     .then((response) => response.body)
-    .then((statuses) => {
-      const contexts = values(groupBy(statuses, 'context'))
-      const latest = contexts.map((c) => c.sort((a, b) => a.id < b.id)[0])
-      const failed = latest.filter((s) => s.state === 'failure')
-      const error = latest.filter((s) => s.state === 'error')
-      const pending = latest.filter((s) => s.state === 'pending')
+    .then((pr) => {
 
       console.info('validating PR', {
         timeout,
-        statusesUrl,
-        latest: latest,
-        failed: failed.length,
-        error: error.length,
-        pending: pending.length
+        prUrl,
+        mergeable: pr.mergeable,
+        mergeable_state: pr.mergeable_state
       })
 
-      if (failed.length || error.length) {
-        console.log('found failed, rejecting...')
-        return Promise.reject(new FailedStatusFoundError())
-      }
-
-      if (pending.length) {
-        if (timeout > HOUR) {
+      if (pr.mergeable_state !== 'clean') {
+        if (timeout > DAY) {
           console.log('pending timeout exceeded, rejecting...')
           return Promise.reject(new PendingTimeoutError())
         }
 
-        console.log('retrying statuses for:', statusesUrl)
+        console.log('retrying statuses for:', prUrl)
         return new Promise((resolve) => setTimeout(() => resolve(), timeout))
-          .then(() => validatePR(statusesUrl, timeout * 2))
+          .then(() => validatePR(prUrl, timeout + MINUTE))
       }
 
       console.log('statuses verified, continuing...')
@@ -102,16 +88,26 @@ module.exports.register = (server, options, next) => {
 
       const { action, sender, pull_request, number } = request.payload
 
-      if (action === 'opened' && openedByGreenKeeperBot(sender)) {
+      console.log(action, pull_request.url, sender.html_url, pull_request.user.login)
+      console.log('clean merge?', pull_request.mergeable_state)
+
+      if ((action === 'opened' && openedByGreenKeeperBot(sender)) || (action === 'synchronize' && openedByGreenKeeperBot(pull_request.user))) {
         request.log(['info', 'PR', 'validating'], pull_request.url)
-        validatePR(pull_request.statuses_url)
+        validatePR(pull_request.url)
           .then(() => request.log(['info', 'PR', 'validated']))
           .then(() => mergePR(
             pull_request.url,
             number,
             pull_request.head.sha
           ))
-          .then(() => request.log(['info', 'PR', 'merged'], pull_request.url))
+          .then(response => response.body)
+          .then(data => {
+            request.log(['info', 'PR', 'merged'], pull_request.url)
+
+            console.log('did it merge?', data)
+
+            return Promise.resolve()
+          })
           .then(() => {
             if (DELETE_BRANCHES) {
               return deleteBranch(pull_request.head)
@@ -134,5 +130,5 @@ module.exports.register = (server, options, next) => {
 
 module.exports.register.attributes = {
   name: 'keeper',
-  version: '0.0.1'
+  version: '0.0.2'
 }
