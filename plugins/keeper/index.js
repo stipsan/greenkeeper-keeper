@@ -32,7 +32,7 @@ const mergePR = (prUrl, prNumber, sha) => {
     .catch(() => put(`${prUrl}/merge`, mergeData, { headers })) // Survival rule #2: double tap
 }
 
-const validatePR = (prUrl, timeout = MINUTE * 5) =>
+const validatePR = (prUrl, timeout = MINUTE) =>
   get(prUrl, { headers })
     .then((response) => response.body)
     .then((pr) => {
