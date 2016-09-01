@@ -67,7 +67,7 @@ const deleteBranch = (head) => {
 }
 
 const openedByGreenKeeperBot = (sender) => {
-  return sender.html_url === GREENKEEPER_BOT_GITHUB_URL
+  return sender.html_url === GREENKEEPER_BOT_GITHUB_URL || sender.html_url === 'https://github.com/stipbot' // @TODO temp
 }
 
 const buildErrorComment = (message, prNumber) => {
