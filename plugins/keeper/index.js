@@ -17,7 +17,7 @@ const { get, put, post, del } = highwire
 
 const headers = {
   'Authorization': `Basic ${btoa(GITHUB_USER + ':' + GITHUB_TOKEN)}`,
-  'Accept': 'application/vnd.github.polaris-preview'
+  'Accept': 'application/vnd.github.polaris-preview+json'
 }
 
 const mergePR = (prUrl, prNumber, sha) => {
