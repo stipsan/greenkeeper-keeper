@@ -50,7 +50,7 @@ const validatePR = (prUrl, timeout = MINUTE) =>
 
         console.log('retrying statuses for:', prUrl)
         return new Promise((resolve) => setTimeout(() => resolve(), timeout))
-          .then(() => validatePR(prUrl, timeout + MINUTE))
+          .then(() => validatePR(prUrl, timeout * 2))
       }
 
       console.log('statuses verified, continuing...')
