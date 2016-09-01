@@ -16,7 +16,8 @@ const DAY = HOUR * 24
 const { get, put, post, del } = highwire
 
 const headers = {
-  'Authorization': `Basic ${btoa(GITHUB_USER + ':' + GITHUB_TOKEN)}`
+  'Authorization': `Basic ${btoa(GITHUB_USER + ':' + GITHUB_TOKEN)}`,
+  'Accept': 'application/vnd.github.polaris-preview'
 }
 
 const mergePR = (prUrl, prNumber, sha) => {
