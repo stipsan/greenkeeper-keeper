@@ -31,7 +31,7 @@ const mergePR = (prUrl, prNumber, sha) => {
   return put(`${prUrl}/merge`, mergeData, { headers })
 }
 
-const validatePR = (prUrl, timeout = MINUTE * 2) =>
+const validatePR = (prUrl, timeout = MINUTE * 10) =>
   get(prUrl, { headers })
     .then((response) => response.body)
     .then((pr) => {
