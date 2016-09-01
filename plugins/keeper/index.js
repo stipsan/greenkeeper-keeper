@@ -36,7 +36,7 @@ const validatePR = (prUrl, timeout = MINUTE) =>
   get(prUrl, { headers })
     .then((response) => response.body)
     .then((pr) => {
-
+      console.log('pull_request', pr)
       console.info('validating PR', {
         timeout,
         prUrl,
