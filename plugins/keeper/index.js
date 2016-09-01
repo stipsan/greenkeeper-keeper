@@ -89,7 +89,7 @@ module.exports.register = (server, options, next) => {
       const { action, sender, pull_request, number } = request.payload
 
       console.log(action, pull_request && pull_request.url, sender.html_url, pull_request && pull_request.user.login)
-      console.log('clean merge?', pull_request.mergeable_state)
+      console.log('clean merge?', pull_request && pull_request.mergeable_state)
 
       if ((action === 'opened' && openedByGreenKeeperBot(sender)) || (action === 'synchronize' && openedByGreenKeeperBot(pull_request.user))) {
         request.log(['info', 'PR', 'validating'], pull_request.url)
