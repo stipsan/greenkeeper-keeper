@@ -20,11 +20,10 @@ const headers = {
   'Accept': 'application/vnd.github.polaris-preview+json'
 }
 
-const mergePR = (prUrl, prNumber, sha) => {
+const mergePR = (prUrl, commit_title, sha) => {
   const mergeData = {
     sha,
-    commit_title: `greenkeeper-keeper(pr: ${prNumber}): :white_check_mark:`,
-    commit_message: `greenkeeper-keeper(pr: ${prNumber}): :white_check_mark:`,
+    commit_title,
     squash: SQUASH_MERGES
   }
 
@@ -36,7 +35,7 @@ const validatePR = (prUrl, timeout = MINUTE) =>
   get(prUrl, { headers })
     .then((response) => response.body)
     .then((pr) => {
-      console.log('pull_request', pr)
+
       console.info('validating PR', {
         timeout,
         prUrl,
@@ -99,7 +98,7 @@ module.exports.register = (server, options, next) => {
           .then(() => request.log(['info', 'PR', 'validated']))
           .then(() => mergePR(
             pull_request.url,
-            number,
+            pull_request.title,
             pull_request.head.sha
           ))
           .then(response => response.body)
