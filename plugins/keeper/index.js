@@ -28,7 +28,9 @@ const mergePR = (prUrl, commit_title, sha) => {
   }
 
   return put(`${prUrl}/merge`, mergeData, { headers })
-    .catch(() => put(`${prUrl}/merge`, mergeData, { headers })) // Survival rule #2: double tap
+    .catch(() => new Promise((resolve) => setTimeout(() => resolve(), MINUTE * 5))
+      .then(() => put(`${prUrl}/merge`, mergeData, { headers })) // Survival rule #2: double tap
+    )
 }
 
 const validatePR = (prUrl, timeout = MINUTE) =>
