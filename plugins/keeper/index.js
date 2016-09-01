@@ -96,7 +96,8 @@ module.exports.register = (server, options, next) => {
 
       if ((action === 'opened' && openedByGreenKeeperBot(sender)) || (action === 'synchronize' && openedByGreenKeeperBot(pull_request.user))) {
         request.log(['info', 'PR', 'validating'], pull_request.url)
-        validatePR(pull_request.url)
+        return new Promise((resolve) => setTimeout(() => resolve(), MINUTE)) // avoid 404s due to eager fetching
+          .then(() => validatePR(pull_request.url))
           .then(() => request.log(['info', 'PR', 'validated']))
           .then(() => mergePR(
             pull_request.url,
