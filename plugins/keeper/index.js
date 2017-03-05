@@ -5,7 +5,7 @@ const PendingTimeoutError = require('./pending-timeout-error')
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 const GITHUB_USER = process.env.GITHUB_USER
-const GREENKEEPER_BOT_GITHUB_URL = 'https://github.com/greenkeeperio-bot'
+const GREENKEEPER_BOT_GITHUB_URL = 'https://github.com/integration/greenkeeper'
 const SQUASH_MERGES = !!process.env.SQUASH_MERGES || false
 const DELETE_BRANCHES = !!process.env.DELETE_BRANCHES || false
 
@@ -134,5 +134,5 @@ module.exports.register = (server, options, next) => {
 
 module.exports.register.attributes = {
   name: 'keeper',
-  version: '0.0.2'
+  version: '0.0.3'
 }
